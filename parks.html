@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.2/angular.min.js"></script>
+<head> 
+    <title>Parks</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<div style="align: center;text-align: center;" ng-app="myApp" ng-controller="myCtrl"> 
+		<h4>Welcome to my Parks Application</h4>
+		<button ng-hide="nameList" ng-click="getLocation()">Get Parks Near Me</button>
+		<button ng-show="nameList" ng-click="nameList= ''">Back</button>
+		<table style = "display: inline;" ng-show="nameList">
+            <tr>
+                <th>Name</th>
+            </tr>
+            <tr  ng-repeat="x in nameList | orderBy : 'Name'">
+                <td>{{ x.name }}</td>
+            </tr>
+        </table>
+	</div>
+	<script>
+		var app = angular.module('myApp', []);
+			app.controller('myCtrl', function($scope, $http) {
+				var x = document.getElementById("demo");
+				$scope.getLocation = function() {
+					if (navigator.geolocation) {
+						navigator.geolocation.getCurrentPosition($scope.showPosition);
+					} else {
+						alert('Geolocation is not supported by this browser.');
+					}
+				};
+				$scope.showPosition = function(position) {
+					alert("Latitude: " + position.coords.latitude + 
+					"<br>Longitude: " + position.coords.longitude); 
+					$http.get("http://localhost:8080/api/getParks?lat="+position.coords.latitude+"&long="+position.coords.longitude)
+					.then(function(response) {
+						if(response.data.isError){
+							alert(response.data.errorMessage);
+						} else {
+							$scope.nameList = response.data.placesList;
+						}
+					});
+				};
+			});
+	</script>
+</body>
+</html>
